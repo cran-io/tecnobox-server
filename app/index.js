@@ -1,4 +1,4 @@
 module.exports = {};
 
 module.exports.filesController = require('./files');
-module.exports.PicturesController = require('./pictures');
+module.exports.picturesController = require('./pictures');

@@ -1,22 +1,23 @@
 var Picture = require('../models').Picture;
 var moment = require('moment');
 
-function sortedList(next) {
+function sortedList(category, next) {
   return _listPictures(true, next);
 }
 
-function list(next) {
+function list(category, next) {
   return _listPictures(false, next);
 }
 
-function saveNewImage(path, date, next) {
+function saveNewImage(userId, path, date, next) {
+  path = path.toLowerCase().replace('/public', '');
+
   Picture.findOne({
-    boxpath: path
+    path: path
   }, function(err, pictureExists) {
     if (err || pictureExists) {
       return next(err);
     }
-
     var shortName = path.lastIndexOf('/') + 1;
     shortName = path.substring(shortName);
 
@@ -28,9 +29,13 @@ function saveNewImage(path, date, next) {
     }
 
     var momentDate = moment(date).format();
+    var url = _pathToDirectLink(userId, path);
+    console.log(url);
 
     var pic = new Picture({
-      boxpath: path,
+      path: path,
+      url: url,
+      userId: userId,
       name: shortName,
       category: stand,
       date: momentDate
@@ -42,8 +47,8 @@ function saveNewImage(path, date, next) {
   });
 }
 
-function _convertToDirectLink(path, next) {
-  var url = 'https://dl.dropboxusercontent.com/u/443545873/carpeta/otracarpeta/alfff.jpg';
+function _pathToDirectLink(userId, path) {
+  return 'https://dl.dropboxusercontent.com/u/' + userId + path;
 }
 
 function _listPictures(sort, next) {

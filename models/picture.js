@@ -3,12 +3,20 @@ var objectId = mongoose.Schema.ObjectId;
 var timestamps = require('mongoose-timestamp');
 
 var pictureSchema = new mongoose.Schema({
-  boxpath: {
+  path: {
     type: String,
     required: true,
     unique: true
   },
   name: {
+    type: String,
+    required: true
+  },
+  userId: {
+    type: String,
+    required: true
+  },
+  url: {
     type: String,
     required: true
   },

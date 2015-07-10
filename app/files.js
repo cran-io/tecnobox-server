@@ -16,11 +16,6 @@ function getUserId(req, res) {
     sandbox: false
   });
 
-  client.getAccountInfo({}, function(err, account) {
-    console.log(account.uid);
-    res.send(200, account.uid);
-  });
-
 }
 
 function searchForImages(req, res) {
@@ -31,6 +26,22 @@ function searchForImages(req, res) {
     sandbox: false
   });
 
+  client.getAccountInfo({}, function(err, account) {
+    if (err) {
+      return res.send(300, err);
+    }
+
+    _syncWithDb(client, account.uid, function(err) {
+      if (err) {
+        return res.send(300, err);
+      } else {
+        return res.send(200, "OK");
+      }
+    });
+  });
+}
+
+function _syncWithDb(client, userId, next) {
   async.parallel([
     function(cb) {
       console.log('Running images to db..');
@@ -40,7 +51,7 @@ function searchForImages(req, res) {
         if (err) {
           return cb(err);
         }
-        _imagesToDb(files, cb);
+        _imagesToDb(userId, files, cb);
       });
     },
     function(cb) {
@@ -50,24 +61,20 @@ function searchForImages(req, res) {
         if (err) {
           return cb(err);
         }
-        _imagesToDb(files, cb);
+        _imagesToDb(userId, files, cb);
       });
     }
   ], function(err) {
-    if (err) {
-      return res.send(300, err);
-    } else {
-      return res.send(200, "OK");
-    }
+    next(err);
   });
 }
 
-function _imagesToDb(files, next) {
+function _imagesToDb(userId, files, next) {
   async.each(files, function(file, cb) {
       if (file.is_dir) {
         return cb;
       }
-      pictureController.saveNewImage(file.path, file.modified, cb);
+      pictureController.saveNewImage(userId, file.path, file.modified, cb);
     },
     function(err) {
       return next(err);
