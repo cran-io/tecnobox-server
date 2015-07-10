@@ -3,9 +3,10 @@ var objectId = mongoose.Schema.ObjectId;
 var timestamps = require('mongoose-timestamp');
 
 var pictureSchema = new mongoose.Schema({
-  fullpath: {
+  boxpath: {
     type: String,
-    required: true
+    required: true,
+    unique: true
   },
   name: {
     type: String,

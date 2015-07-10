@@ -3,12 +3,9 @@ var router = express.Router();
 
 var filesController = require('../app').filesController;
 
-/* GET: Test login.*/
-router.get('/oauth1', filesController.actionOAuthStep1);
-router.get('/oauth2', filesController.actionOAuthStep2);
 
-router.get('/check', filesController.check);
-router.get('/prepare', filesController.prepareDropBox);
+router.get('/prepare', filesController.searchForImages);
 
+router.get('/user', filesController.getUserId);
 
 module.exports = router;
