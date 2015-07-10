@@ -1,19 +1,41 @@
 # tecnobox-server
+Tecnopolis Dropbox Image Server.
+
+The server syncs a Public DropBox folder searching for .PNG and .JPEG files.
+
+# Pictures filename
+Pictures can be JPEG and PNG extension only. The filename is composed of: category_region_timestamp.png
+
+# Configuration
+Configure a DropBox App and get the Key, Secret and Token. Then set the following ENV variables:
+
+```
+DBOXKEY=App Key
+DBOXSECRET=App Secret
+DBOXTOKEN=App Token
+```
 
 
-ROOT folder is /Public
-They should be accesed by a shared folder link ENDPOINT.
+# Routes
 
-In the root we can find:
+## Sync DropBox with Database
+Triggers a sync, the response will be 200 if everything is OK or 300 if something failed.
+If a category is not specified in the original image filename, it defaults to "UNKNOWN".
 
-## Uploads /Uploads
-/Uploads --> stand_region_timestamp.png
+```
+GET: /sync
+```
 
-## Group /:group_id
-In the group folder we can find:
+## Retrieve all images url
+Asks for all the available images url. The links are public for everyone.
 
-### Stands
-/:visitor_id/stand_region_timestamp.png
+```
+GET: /images
+```
 
-### Dome
-/domo/stand_region_timestamp.png
+## Retrieve all images url for a specific category
+Asks for all the available images url for a specific category. Category is a 1 word String. The links are public for everyone.
+
+```
+GET: /images/:category
+```

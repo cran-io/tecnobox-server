@@ -3,20 +3,9 @@ var async = require('async');
 
 var pictureController = require('./pictures');
 
-var appkey = process.env.DBOXKEY ||  'shyctyr7eiihjiy';
-var appsecret = process.env.DBOXSECRET || 'e9skh7xc63jwabs';
-var authtoken = process.env.DBOXTOKEN ||  'hX8Q7Bjh6AAAAAAAAAAA_JgoCxpJLObbNLj5yS4zb7UW93HOHu7YplM4GrEFK1F3';
-
-
-function getUserId(req, res) {
-  var client = new Dropbox.Client({
-    key: appkey,
-    secret: appsecret,
-    token: authtoken,
-    sandbox: false
-  });
-
-}
+var appkey = process.env.DBOXKEY;
+var appsecret = process.env.DBOXSECRET;
+var authtoken = process.env.DBOXTOKEN;
 
 function searchForImages(req, res) {
   var client = new Dropbox.Client({
@@ -84,4 +73,3 @@ function _imagesToDb(userId, files, next) {
 
 module.exports = {};
 module.exports.searchForImages = searchForImages;
-module.exports.getUserId = getUserId;
