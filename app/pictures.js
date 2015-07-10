@@ -1,12 +1,35 @@
 var Picture = require('../models').Picture;
 var moment = require('moment');
+var _ = require('underscore');
 
-function sortedList(category, next) {
-  return _listPictures(true, next);
+function sortedList(req, res) {
+  var category = req.params.category;
+  if (!category) {
+    category = null;
+  }
+  _listPictures(category, true, function(err, pictures) {
+    if (err) {
+      res.send(300, err);
+    } else {
+      var urls = _.pluck(pictures, 'url');
+      res.json(urls);
+    }
+  });
 }
 
-function list(category, next) {
-  return _listPictures(false, next);
+function list(req, res) {
+  var category = req.params.category;
+  if (!category) {
+    category = null;
+  }
+  _listPictures(category, false, function(err, pictures) {
+    if (err) {
+      res.send(300, err);
+    } else {
+      var urls = _.pluck(pictures, 'url');
+      res.json(urls);
+    }
+  });
 }
 
 function saveNewImage(userId, path, date, next) {
@@ -51,11 +74,17 @@ function _pathToDirectLink(userId, path) {
   return 'https://dl.dropboxusercontent.com/u/' + userId + path;
 }
 
-function _listPictures(sort, next) {
+function _listPictures(category, sort, next) {
+  var query = {};
+  if (category) {
+    query = {
+      category: category
+    };
+  }
   if (sort) {
-    Picture.find({}).sort('-date').exec(next);
+    Picture.find(query).sort('-date').exec(next);
   } else {
-    Picture.find({}).exec(next);
+    Picture.find(query).exec(next);
   }
   return;
 }
