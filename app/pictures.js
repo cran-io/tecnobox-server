@@ -7,7 +7,7 @@ function sortedList(req, res) {
   if (!category) {
     category = null;
   }
-  _listPictures(category, true, function(err, pictures) {
+  _listPictures(category, true, req.query.page, req.query.limit, function(err, pictures) {
     if (err) {
       res.send(300, err);
     } else {
@@ -18,11 +18,11 @@ function sortedList(req, res) {
 }
 
 function list(req, res) {
-  var category = req.params.category;
+  var category = req.query.category;
   if (!category) {
     category = null;
   }
-  _listPictures(category, false, function(err, pictures) {
+  _listPictures(category, null, req.query.page, req.query.limit, function(err, pictures) {
     if (err) {
       res.send(300, err);
     } else {
@@ -74,19 +74,27 @@ function _pathToDirectLink(userId, path) {
   return 'https://dl.dropboxusercontent.com/u/' + userId + path;
 }
 
-function _listPictures(category, sort, next) {
+function _listPictures(category, sort, page, limit, next) {
   var query = {};
   if (category) {
     query = {
       category: category
     };
   }
+
   if (sort) {
-    Picture.find(query).sort('-date').exec(next);
-  } else {
-    Picture.find(query).exec(next);
+    sort = {
+      date: -1
+    };
   }
-  return;
+
+  Picture.paginate(query, {
+    page: page,
+    limit: limit,
+    sortBy: sort
+  }, function(err, results, pageCount, itemCount) {
+    next(err, results);
+  });
 }
 
 

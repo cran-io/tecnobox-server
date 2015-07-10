@@ -26,16 +26,14 @@ If a category is not specified in the original image filename, it defaults to "U
 GET: /sync
 ```
 
-## Retrieve all images url
-Asks for all the available images url. The links are public for everyone.
-
+## Retrieve all images url [Paginated]
+Asks for all the available images url. Category filter is optional. The links are public for everyone.
 ```
 GET: /images
-```
 
-## Retrieve all images url for a specific category
-Asks for all the available images url for a specific category. Category is a 1 word String. The links are public for everyone.
-
-```
-GET: /images/:category
+params {
+  category: String,
+  page: Integer [default=1],
+  limit: Integer [default=10]
+}
 ```

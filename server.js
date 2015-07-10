@@ -1,4 +1,5 @@
 var express = require('express');
+var paginate = require('express-paginate');
 var path = require('path');
 var favicon = require('serve-favicon');
 var logger = require('morgan');
@@ -8,6 +9,9 @@ var bodyParser = require('body-parser');
 var webRoutes = require('./routes/web');
 
 var app = express();
+
+app.use(paginate.middleware(10, 50));
+
 var port = process.env.PORT || 8080;
 var server = require('http').Server(app);
 

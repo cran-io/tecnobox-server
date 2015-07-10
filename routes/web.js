@@ -11,7 +11,4 @@ router.get('/sync', filesController.searchForImages);
 //Returns all the images urls
 router.get('/images', picturesController.sortedList);
 
-//Returns all the images urls from a specific category
-router.get('/images/:category', picturesController.sortedList);
-
 module.exports = router;

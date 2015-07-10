@@ -1,6 +1,7 @@
 var mongoose = require('mongoose');
 var objectId = mongoose.Schema.ObjectId;
 var timestamps = require('mongoose-timestamp');
+var paginate = require('mongoose-paginate');
 
 var pictureSchema = new mongoose.Schema({
   path: {
@@ -32,5 +33,6 @@ var pictureSchema = new mongoose.Schema({
 });
 
 pictureSchema.plugin(timestamps);
+pictureSchema.plugin(paginate);
 
 module.exports = mongoose.model('Picture', pictureSchema);
