@@ -6,7 +6,7 @@ var picturesController = require('../app').picturesController;
 
 
 //Triggers a sync of PNGs and JPEGs files with the DB
-router.get('/sync', filesController.searchForImages);
+router.get('/sync', filesController.triggerSync);
 
 //Returns all the images urls
 router.get('/images', picturesController.sortedList);

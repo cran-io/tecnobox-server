@@ -1,10 +1,19 @@
 # tecnobox-server
 Tecnopolis Dropbox Image Server.
 
-The server syncs a Public DropBox folder searching for .PNG and .JPEG files.
+The server syncs a Public DropBox folder searching for image files.
+A scheduled job will run every 15 minutes to trigger the sync. You can also run it manually (keep reading).
 
-# Pictures filename
-Pictures can be JPEG and PNG extension only. The filename is composed of: category_region_timestamp.png
+# Installation
+Install dependencies:
+```js
+npm install
+```
+
+Run the server:
+```js
+node server
+```
 
 # Configuration
 Configure a DropBox App and get the Key, Secret and Token. Then set the following ENV variables:
@@ -14,13 +23,38 @@ DBOXKEY=App Key
 DBOXSECRET=App Secret
 DBOXTOKEN=App Token
 ```
+If this configuration is missing, the script won't start!
 
+## Pictures filename
+Pictures can be JPEG and PNG extension only. The filename is composed of: category_region_timestamp.png
+
+# Models
+## Picture
+```
+  {
+  path: String,     //Unique relative path to /Public folder
+  name: String,     //Name of the file
+  userId: String,   //DropBox userId associated
+                    //with the App configuration account
+  url: String,      //public link to this picture
+  category: String, //category name
+  date: Date        //DropBox file updated date
+}
+
+```
+The userId is useful for deleting massive invalid pictures from the mongo console. The query process would be something like:
+```
+show databases
+use tecnobox-dev
+db.pictures.remove({userId: '891231'})
+```
 
 # Routes
 
 ## Sync DropBox with Database
 Triggers a sync, the response will be 200 if everything is OK or 300 if something failed.
-If a category is not specified in the original image filename, it defaults to "UNKNOWN".
+If a category is not specified in the original image filename, it defaults to "unknown".
+A safety check is present: You can't trigger the sync if the last one was less than 5 minutes ago.
 
 ```
 GET: /sync

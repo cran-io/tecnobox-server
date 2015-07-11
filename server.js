@@ -6,6 +6,7 @@ var logger = require('morgan');
 var cookieParser = require('cookie-parser');
 var bodyParser = require('body-parser');
 
+var filesController = require('./app').filesController;
 var webRoutes = require('./routes/web');
 
 var app = express();
@@ -36,6 +37,7 @@ app.use(bodyParser.urlencoded({
 app.use(cookieParser());
 
 app.use('/', webRoutes);
+filesController.scheduleSync();
 
 // catch 404 and forward to error handler
 app.use(function(req, res, next) {

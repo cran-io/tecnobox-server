@@ -48,7 +48,7 @@ function saveNewImage(userId, path, date, next) {
     if (stand != 0) {
       stand = shortName.substring(0, stand).toLowerCase();
     } else {
-      stand = "UNKNOWN";
+      stand = "unknown";
     }
 
     var momentDate = moment(date).format();
@@ -78,7 +78,7 @@ function _listPictures(category, sort, page, limit, next) {
   var query = {};
   if (category) {
     query = {
-      category: category
+      category: category.toLowerCase()
     };
   }
 
