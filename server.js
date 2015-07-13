@@ -37,8 +37,8 @@ app.use(bodyParser.urlencoded({
 }));
 app.use(cookieParser());
 
-app.use('/', webRoutes);
 app.use(access_control_header);
+app.use('/', webRoutes);
 filesController.scheduleSync();
 
 // catch 404 and forward to error handler
