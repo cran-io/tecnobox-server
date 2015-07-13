@@ -78,7 +78,7 @@ function doMaintenance() {
       return;
     }
     async.each(pictures, function(p, cb) {
-      request(p.url, function(error, response, body) {
+      request.head(p.url, function(error, response, body) {
         if (!error && response.statusCode == 404) {
           p.remove(function(err) {});
         }
