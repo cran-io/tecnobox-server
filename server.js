@@ -5,6 +5,7 @@ var favicon = require('serve-favicon');
 var logger = require('morgan');
 var cookieParser = require('cookie-parser');
 var bodyParser = require('body-parser');
+var access_control_header = require('./middleware/access_control_header');
 
 var filesController = require('./app').filesController;
 var webRoutes = require('./routes/web');
@@ -37,6 +38,7 @@ app.use(bodyParser.urlencoded({
 app.use(cookieParser());
 
 app.use('/', webRoutes);
+app.use(access_control_header);
 filesController.scheduleSync();
 
 // catch 404 and forward to error handler
