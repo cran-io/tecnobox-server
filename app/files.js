@@ -86,6 +86,16 @@ function _syncWithDb(client, userId, next) {
       });
     },
     function(cb) {
+      client.search('/Public/', '.jpg', {
+        httpCache: true
+      }, function(err, files) {
+        if (err) {
+          return cb(err);
+        }
+        _imagesToDb(userId, files, cb);
+      });
+    },
+    function(cb) {
       client.search('/Public/', '.jpeg', {
         httpCache: true
       }, function(err, files) {
