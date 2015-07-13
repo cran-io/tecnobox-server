@@ -62,15 +62,16 @@ db.pictures.remove({userId: '891231'})
 Triggers a sync, the response will be 200 if everything is OK or 300 if something failed.
 If a category is not specified in the original image filename, it defaults to "unknown".
 A safety check is present: You can't trigger the sync if the last one was less than 5 minutes ago.
+Before sync starts, each saved picture existence will be verified.
 
 ```js
 GET: /sync
 ```
 
-## GET /Images - Retrieve all images url [Paginated]
-Asks for all the available images url. Category filter is optional. The links are public for everyone.
+## GET /Pictures - Retrieve all pictures url [Paginated]
+Asks for all the available pictures url. Category filter is optional. The links are public for everyone.
 ```js
-GET: /images
+GET: /pictures
 
 allowed query params:
 {

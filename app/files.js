@@ -18,7 +18,8 @@ function scheduleSync() {
   }
   console.log('Syncing DropBox with TecnoBox every 15 minutes from now on..');
   var j = schedule.scheduleJob('*/15 * * * *', function() {
-    _searchForImages(function(err) {
+    pictureController.doMaintenance();
+    _searchForPictures(function(err) {
       console.log('> Syncing started. Last was ' + lastSyncMoment.from(moment()));
       if (err) {
         console.log('Sync failed! check for error: ' + err.message);
@@ -34,14 +35,15 @@ function triggerSync(req, res) {
   var fiveFromNow = moment().subtract(5, 'minutes');
   var allowed = lastSyncMoment.isBefore(fiveFromNow);
   if (!allowed) {
-    return res.send(300, 'Not allowed. Wait at least 5 minutes.');
+    return res.status(300).send('Not allowed. Wait at least 5 minutes.');
   }
-  _searchForImages(function(err) {
+  pictureController.doMaintenance();
+  _searchForPictures(function(err) {
     if (err) {
-      return res.send(300, err);
+      return res.status(300).send(err);
     } else {
       lastSyncMoment = moment();
-      return res.send(200, 'Sync completed at ' + lastSyncMoment.format('LT'));
+      return res.status(200).send('Sync completed at ' + lastSyncMoment.format('LT'));
     }
   });
 }
@@ -54,7 +56,7 @@ function _checkValidConfig() {
   }
 }
 
-function _searchForImages(next) {
+function _searchForPictures(next) {
   var client = new Dropbox.Client({
     key: appkey,
     secret: appsecret,
@@ -82,7 +84,7 @@ function _syncWithDb(client, userId, next) {
         if (err) {
           return cb(err);
         }
-        _imagesToDb(userId, files, cb);
+        _picturesToDb(userId, files, cb);
       });
     },
     function(cb) {
@@ -92,7 +94,7 @@ function _syncWithDb(client, userId, next) {
         if (err) {
           return cb(err);
         }
-        _imagesToDb(userId, files, cb);
+        _picturesToDb(userId, files, cb);
       });
     },
     function(cb) {
@@ -102,7 +104,7 @@ function _syncWithDb(client, userId, next) {
         if (err) {
           return cb(err);
         }
-        _imagesToDb(userId, files, cb);
+        _picturesToDb(userId, files, cb);
       });
     }
   ], function(err) {
@@ -110,12 +112,12 @@ function _syncWithDb(client, userId, next) {
   });
 }
 
-function _imagesToDb(userId, files, next) {
+function _picturesToDb(userId, files, next) {
   async.each(files, function(file, cb) {
       if (file.is_dir) {
         return cb;
       }
-      pictureController.saveNewImage(userId, file.path, file.modified, cb);
+      pictureController.saveNewPicture(userId, file.path, file.modified, cb);
     },
     function(err) {
       return next(err);

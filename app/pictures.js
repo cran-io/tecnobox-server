@@ -1,6 +1,8 @@
 var Picture = require('../models').Picture;
 var moment = require('moment');
 var _ = require('underscore');
+var async = require('async');
+var request = require('request');
 
 function sortedList(req, res) {
   var category = req.query.category;
@@ -32,7 +34,7 @@ function list(req, res) {
   });
 }
 
-function saveNewImage(userId, path, date, next) {
+function saveNewPicture(userId, path, date, next) {
   path = path.toLowerCase().replace('/public', '');
 
   Picture.findOne({
@@ -70,6 +72,21 @@ function saveNewImage(userId, path, date, next) {
   });
 }
 
+function doMaintenance() {
+  Picture.find({}, function(err, pictures) {
+    if (err) {
+      return;
+    }
+    async.each(pictures, function(p, cb) {
+      request(p.url, function(error, response, body) {
+        if (!error && response.statusCode == 404) {
+          p.remove(function(err) {});
+        }
+      })
+    })
+  })
+}
+
 function _pathToDirectLink(userId, path) {
   return 'https://dl.dropboxusercontent.com/u/' + userId + path;
 }
@@ -100,6 +117,7 @@ function _listPictures(category, sort, page, limit, next) {
 
 module.exports = {};
 
-module.exports.saveNewImage = saveNewImage;
+module.exports.saveNewPicture = saveNewPicture;
+module.exports.doMaintenance = doMaintenance;
 module.exports.sortedList = sortedList;
 module.exports.list = list;
