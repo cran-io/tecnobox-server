@@ -3,7 +3,7 @@ var moment = require('moment');
 var _ = require('underscore');
 
 function sortedList(req, res) {
-  var category = req.params.category;
+  var category = req.query.category;
   if (!category) {
     category = null;
   }
