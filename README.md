@@ -16,7 +16,12 @@ node server
 ```
 
 # Configuration
-Configure a DropBox App and get the Key, Secret and Token. Then set the following ENV variables:
+First create an App in https://www.dropbox.com/developers/apps
+Go to the App profile
+Obtain the *App key* and *App secret* (visible)
+Generate an App Token (clicking the *Generated access token* button)
+
+Then set the following ENV variables:
 
 ```
 DBOXKEY=App Key
