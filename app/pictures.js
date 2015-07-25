@@ -17,10 +17,26 @@ function sortedList(req, res) {
     if (err) {
       res.send(300, err);
     } else {
-      var urls = _.pluck(pictures, 'url');
+      var urls = _.pluck(pictures, 'thumbnail');
       res.json(urls);
     }
   });
+}
+
+function pictureURL(req, res) {
+  var thumbnail = req.query.thumbnail;
+
+  if (!thumbnail) {
+    res.send(300, "Missing thumbnail");
+  }
+
+  _getPictureWithThumbnail(thumbnail, function(err, picture) {
+    if (err) {
+      res.send(300, err);
+    } else {
+      res.json(picture.url);
+    }
+  })
 }
 
 function list(req, res) {
@@ -68,8 +84,7 @@ function saveNewPicture(userId, path, date, next) {
       userId: userId,
       name: shortName,
       category: stand,
-      date: momentDate,
-      thumbnail: thumbnail
+      date: momentDate
     });
 
     request.get(url, function(error, response, body) {
@@ -78,7 +93,10 @@ function saveNewPicture(userId, path, date, next) {
           .resize(500, 280)
           .toFormat('jpeg')
           .toFile(thumbnail, function(err, data) {
-            console.log("Resize error: " + err);
+            if (!err) {
+              pic.thumbnail = 'thumbnails/' + shortName;
+              pic.save();
+            }
           });
       }
     });
@@ -109,7 +127,7 @@ function _pathToDirectLink(userId, path) {
 }
 
 function _listPictures(category, sort, page, limit, next) {
-  var query = {};
+  var query = {thumbnail: { $exists: true }};
   if (category) {
     query = {
       category: category.toLowerCase()
@@ -127,14 +145,20 @@ function _listPictures(category, sort, page, limit, next) {
     limit: limit,
     sortBy: sort
   }, function(err, results, pageCount, itemCount) {
+    console.log(results);
     next(err, results);
   });
 }
 
+function _getPictureWithThumbnail(thumbnail, next) {
+  var query = {thumbnail: thumbnail}
+  Picture.findOne(query, next);
+}
 
 module.exports = {};
 
 module.exports.saveNewPicture = saveNewPicture;
+module.exports.pictureURL = pictureURL;
 module.exports.doMaintenance = doMaintenance;
 module.exports.sortedList = sortedList;
 module.exports.list = list;

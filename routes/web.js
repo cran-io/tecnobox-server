@@ -10,5 +10,6 @@ router.get('/sync', filesController.triggerSync);
 
 //Returns all the pictures urls
 router.get('/pictures', picturesController.sortedList);
+router.get('/source_picture', picturesController.pictureURL);
 
 module.exports = router;
