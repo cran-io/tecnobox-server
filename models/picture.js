@@ -29,6 +29,10 @@ var pictureSchema = new mongoose.Schema({
     type: Date,
     default: Date.now,
     required: true
+  },
+  thumbnail: {
+    type: String,
+    required: true
   }
 });
 

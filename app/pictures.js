@@ -3,6 +3,10 @@ var moment = require('moment');
 var _ = require('underscore');
 var async = require('async');
 var request = require('request');
+var sharp = require('sharp');
+var request = require('request').defaults({
+  encoding: null
+});
 
 function sortedList(req, res) {
   var category = req.query.category;
@@ -45,6 +49,7 @@ function saveNewPicture(userId, path, date, next) {
     }
     var shortName = path.lastIndexOf('/') + 1;
     shortName = path.substring(shortName);
+    var thumbnail = 'public/thumbnails/' + shortName;
 
     var stand = shortName.indexOf('_') + 1;
     if (stand != 0) {
@@ -63,7 +68,19 @@ function saveNewPicture(userId, path, date, next) {
       userId: userId,
       name: shortName,
       category: stand,
-      date: momentDate
+      date: momentDate,
+      thumbnail: thumbnail
+    });
+
+    request.get(url, function(error, response, body) {
+      if (!error && response.statusCode == 200) {
+        sharp(new Buffer(body))
+          .resize(500, 280)
+          .toFormat('jpeg')
+          .toFile(thumbnail, function(err, data) {
+            console.log("Resize error: " + err);
+          });
+      }
     });
 
     pic.save(function(err) {
