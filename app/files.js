@@ -48,6 +48,23 @@ function triggerSync(req, res) {
   });
 }
 
+function triggerImageSync(req, res) {
+  var url = req.query.q
+
+  if (!url) {
+    return res.status(300).send("No url found!");
+  }
+
+  pictureController.saveNewPicture("443545873", url, moment().valueOf(), function(err, picture) {
+    if (err) {
+      console.log("Error saving Picture: " + err);
+      return;
+    } else {
+      return res.status(200).send(picture.thumbnail);
+    }
+  });
+}
+
 function _checkValidConfig() {
   if (!appkey ||  !appsecret || !authtoken) {
     return false;
@@ -127,4 +144,5 @@ function _picturesToDb(userId, files, next) {
 
 module.exports = {};
 module.exports.triggerSync = triggerSync;
+module.exports.triggerImageSync = triggerImageSync;
 module.exports.scheduleSync = scheduleSync;

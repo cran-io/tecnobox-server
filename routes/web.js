@@ -7,6 +7,7 @@ var picturesController = require('../app').picturesController;
 
 //Triggers a sync pictures files with the DB
 router.get('/sync', filesController.triggerSync);
+router.get('/sync_image', filesController.triggerImageSync);
 
 //Returns all the pictures urls
 router.get('/pictures', picturesController.sortedList);

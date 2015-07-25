@@ -61,7 +61,7 @@ function saveNewPicture(userId, path, date, next) {
     path: path
   }, function(err, pictureExists) {
     if (err || pictureExists) {
-      return next(err);
+      return next(err, pictureExists);
     }
     var shortName = path.lastIndexOf('/') + 1;
     shortName = path.substring(shortName);
@@ -95,14 +95,12 @@ function saveNewPicture(userId, path, date, next) {
           .toFile(thumbnail, function(err, data) {
             if (!err) {
               pic.thumbnail = 'thumbnails/' + shortName;
-              pic.save();
+              pic.save(function(err, picture) {
+                next(err, picture);
+              });
             }
           });
       }
-    });
-
-    pic.save(function(err) {
-      next(err);
     });
   });
 }
