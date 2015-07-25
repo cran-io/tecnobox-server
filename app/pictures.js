@@ -90,7 +90,7 @@ function saveNewPicture(userId, path, date, next) {
     request.get(url, function(error, response, body) {
       if (!error && response.statusCode == 200) {
         sharp(new Buffer(body))
-          .resize(500, 280)
+          .resize(639, 392)
           .toFormat('jpeg')
           .toFile(thumbnail, function(err, data) {
             if (!err) {
