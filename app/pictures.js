@@ -34,7 +34,7 @@ function pictureURL(req, res) {
     if (err) {
       res.send(300, err);
     } else {
-      res.json(picture.url);
+      res.json(picture.path);
     }
   })
 }
@@ -48,7 +48,7 @@ function list(req, res) {
     if (err) {
       res.send(300, err);
     } else {
-      var urls = _.pluck(pictures, 'url');
+      var urls = _.pluck(pictures, 'path');
       res.json(urls);
     }
   });
@@ -111,9 +111,7 @@ function _pathToDirectLink(key) {
 function _listPictures(category, sort, page, limit, next) {
   var query = {thumbnail: { $exists: true }};
   if (category) {
-    query = {
-      category: category.toLowerCase()
-    };
+    query[category] = category.toLowerCase()
   }
 
   if (sort) {
@@ -127,7 +125,6 @@ function _listPictures(category, sort, page, limit, next) {
     limit: limit,
     sortBy: sort
   }, function(err, results, pageCount, itemCount) {
-    console.log(results);
     next(err, results);
   });
 }

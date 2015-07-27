@@ -1,4 +1,3 @@
-var Dropbox = require('dropbox');
 var async = require('async');
 var schedule = require('node-schedule');
 var moment = require('moment');
@@ -6,10 +5,6 @@ var AWS = require('aws-sdk');
 var s3 = new AWS.S3();
 
 var pictureController = require('./pictures');
-
-var appkey = process.env.DBOXKEY;
-var appsecret = process.env.DBOXSECRET;
-var authtoken = process.env.DBOXTOKEN;
 
 var lastSyncMoment = moment().subtract(15, 'minutes');
 var lastKeyUsed;
@@ -19,10 +14,6 @@ String.prototype.endsWith = function(suffix) {
 };
 
 function scheduleSync() {
-  if (!_checkValidConfig()) {
-    console.log("ERROR!! Missing DropBox app configuration.");
-    process.exit();
-  }
   console.log('Syncing Amazon S3 with TecnoBox every 15 minutes from now on..');
   var j = schedule.scheduleJob('*/15 * * * *', function() {
     pictureController.doMaintenance();
@@ -55,31 +46,6 @@ function triggerSync(req, res) {
   });
 }
 
-function triggerImageSync(req, res) {
-  var url = req.query.q
-
-  if (!url) {
-    return res.status(300).send("No url found!");
-  }
-
-  pictureController.saveNewPicture("443545873", url, moment().valueOf(), function(err, picture) {
-    if (err) {
-      console.log("Error saving Picture: " + err);
-      return;
-    } else {
-      return res.status(200).send(picture.thumbnail);
-    }
-  });
-}
-
-function _checkValidConfig() {
-  if (!appkey ||  !appsecret || !authtoken) {
-    return false;
-  } else {
-    return true;
-  }
-}
-
 function _searchForPictures(cb) {
   listAllKeys("", [], function(keys) {
     _picturesToDb(keys, cb);
@@ -87,12 +53,13 @@ function _searchForPictures(cb) {
 }
 
 function listAllKeys(marker, keys, cb) {
-  s3.listObjects({Bucket: "turismo-site", Prefix: "sources/", Marker: marker}, function(err, data) {
+  s3.listObjects({Bucket: "turismo-site", Prefix: "sources/", Marker: marker, EncodingType: "url"}, function(err, data) {
     var new_keys = keys.concat(data.Contents);
     lastKeyUsed = data.Contents.slice(-1)[0].Key;
     if(data.IsTruncated) {
       listAllKeys(lastKeyUsed, new_keys, cb);
     } else {
+      console.log(lastKeyUsed);
       cb(new_keys);
     }
   });
@@ -115,5 +82,4 @@ function _picturesToDb(keys, next) {
 
 module.exports = {};
 module.exports.triggerSync = triggerSync;
-module.exports.triggerImageSync = triggerImageSync;
 module.exports.scheduleSync = scheduleSync;
