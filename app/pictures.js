@@ -111,7 +111,7 @@ function _pathToDirectLink(key) {
 function _listPictures(category, sort, page, limit, next) {
   var query = {thumbnail: { $exists: true }};
   if (category) {
-    query[category] = category.toLowerCase()
+    query['category'] = category.toLowerCase()
   }
 
   if (sort) {

@@ -59,7 +59,6 @@ function listAllKeys(marker, keys, cb) {
     if(data.IsTruncated) {
       listAllKeys(lastKeyUsed, new_keys, cb);
     } else {
-      console.log(lastKeyUsed);
       cb(new_keys);
     }
   });
