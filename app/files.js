@@ -12,8 +12,7 @@ var appsecret = process.env.DBOXSECRET;
 var authtoken = process.env.DBOXTOKEN;
 
 var lastSyncMoment = moment().subtract(15, 'minutes');
-
-var allKeys = [];
+var lastKeyUsed;
 
 String.prototype.endsWith = function(suffix) {
     return this.indexOf(suffix, this.length - suffix.length) !== -1;
@@ -90,8 +89,9 @@ function _searchForPictures(cb) {
 function listAllKeys(marker, keys, cb) {
   s3.listObjects({Bucket: "turismo-site", Prefix: "sources/", Marker: marker}, function(err, data) {
     var new_keys = keys.concat(data.Contents);
+    lastKeyUsed = data.Contents.slice(-1)[0].Key;
     if(data.IsTruncated) {
-      listAllKeys(data.Contents.slice(-1)[0].Key, new_keys, cb);
+      listAllKeys(lastKeyUsed, new_keys, cb);
     } else {
       cb(new_keys);
     }
