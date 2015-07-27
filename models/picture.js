@@ -13,14 +13,6 @@ var pictureSchema = new mongoose.Schema({
     type: String,
     required: true
   },
-  userId: {
-    type: String,
-    required: true
-  },
-  url: {
-    type: String,
-    required: true
-  },
   category: {
     type: String,
     required: true
@@ -32,7 +24,7 @@ var pictureSchema = new mongoose.Schema({
   },
   thumbnail: {
     type: String,
-    required: false
+    required: true
   }
 });
 

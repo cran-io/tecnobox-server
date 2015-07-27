@@ -34,7 +34,7 @@ function pictureURL(req, res) {
     if (err) {
       res.send(300, err);
     } else {
-      res.json(picture.url);
+      res.json(picture.path);
     }
   })
 }
@@ -48,59 +48,43 @@ function list(req, res) {
     if (err) {
       res.send(300, err);
     } else {
-      var urls = _.pluck(pictures, 'url');
+      var urls = _.pluck(pictures, 'path');
       res.json(urls);
     }
   });
 }
 
-function saveNewPicture(userId, path, date, next) {
-  path = path.toLowerCase().replace('/public', '');
-
+function saveNewPicture(key, date, next) {
+  var path = _pathToDirectLink(key);
   Picture.findOne({
     path: path
   }, function(err, pictureExists) {
     if (err || pictureExists) {
-      return next(err, pictureExists);
+      return next(err);
     }
-    var shortName = path.lastIndexOf('/') + 1;
-    shortName = path.substring(shortName);
-    var thumbnail = 'public/thumbnails/' + shortName;
 
-    var stand = shortName.indexOf('_') + 1;
-    if (stand != 0) {
+    var shortName = key.substring(key.lastIndexOf('/') + 1);
+    var thumbnail = _pathToDirectLink('thumbnails/' + shortName);
+
+    var stand = shortName.indexOf('_');
+    if (stand > 0) {
       stand = shortName.substring(0, stand).toLowerCase();
     } else {
       stand = "unknown";
     }
 
     var momentDate = moment(date).format();
-    var url = _pathToDirectLink(userId, path);
-    console.log(url);
 
     var pic = new Picture({
       path: path,
-      url: url,
-      userId: userId,
       name: shortName,
       category: stand,
-      date: momentDate
+      date: momentDate,
+      thumbnail: thumbnail
     });
 
-    request.get(url, function(error, response, body) {
-      if (!error && response.statusCode == 200) {
-        sharp(new Buffer(body))
-          .resize(639, 392)
-          .toFormat('jpeg')
-          .toFile(thumbnail, function(err, data) {
-            if (!err) {
-              pic.thumbnail = 'thumbnails/' + shortName;
-              pic.save(function(err, picture) {
-                next(err, picture);
-              });
-            }
-          });
-      }
+    pic.save(function(err, picture) {
+      next(err);
     });
   });
 }
@@ -111,7 +95,7 @@ function doMaintenance() {
       return;
     }
     async.each(pictures, function(p, cb) {
-      request.head(p.url, function(error, response, body) {
+      request.head(p.path, function(error, response, body) {
         if (!error && response.statusCode == 404) {
           p.remove(function(err) {});
         }
@@ -120,16 +104,14 @@ function doMaintenance() {
   })
 }
 
-function _pathToDirectLink(userId, path) {
-  return 'https://dl.dropboxusercontent.com/u/' + userId + path;
+function _pathToDirectLink(key) {
+  return 'https://s3-sa-east-1.amazonaws.com/turismo-site/' + key;
 }
 
 function _listPictures(category, sort, page, limit, next) {
   var query = {thumbnail: { $exists: true }};
   if (category) {
-    query = {
-      category: category.toLowerCase()
-    };
+    query['category'] = category.toLowerCase()
   }
 
   if (sort) {
@@ -143,7 +125,6 @@ function _listPictures(category, sort, page, limit, next) {
     limit: limit,
     sortBy: sort
   }, function(err, results, pageCount, itemCount) {
-    console.log(results);
     next(err, results);
   });
 }
