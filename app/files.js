@@ -2,6 +2,8 @@ var Dropbox = require('dropbox');
 var async = require('async');
 var schedule = require('node-schedule');
 var moment = require('moment');
+var AWS = require('aws-sdk');
+var s3 = new AWS.S3();
 
 var pictureController = require('./pictures');
 
@@ -11,12 +13,18 @@ var authtoken = process.env.DBOXTOKEN;
 
 var lastSyncMoment = moment().subtract(15, 'minutes');
 
+var allKeys = [];
+
+String.prototype.endsWith = function(suffix) {
+    return this.indexOf(suffix, this.length - suffix.length) !== -1;
+};
+
 function scheduleSync() {
   if (!_checkValidConfig()) {
     console.log("ERROR!! Missing DropBox app configuration.");
     process.exit();
   }
-  console.log('Syncing DropBox with TecnoBox every 15 minutes from now on..');
+  console.log('Syncing Amazon S3 with TecnoBox every 15 minutes from now on..');
   var j = schedule.scheduleJob('*/15 * * * *', function() {
     pictureController.doMaintenance();
     _searchForPictures(function(err) {
@@ -73,72 +81,35 @@ function _checkValidConfig() {
   }
 }
 
-function _searchForPictures(next) {
-  var client = new Dropbox.Client({
-    key: appkey,
-    secret: appsecret,
-    token: authtoken,
-    sandbox: false
-  });
-
-  client.getAccountInfo({}, function(err, account) {
-    if (err) {
-      return next(err);
-    }
-
-    _syncWithDb(client, account.uid, function(err) {
-      return next(err);
-    });
+function _searchForPictures(cb) {
+  listAllKeys("", [], function(keys) {
+    _picturesToDb(keys, cb);
   });
 }
 
-function _syncWithDb(client, userId, next) {
-  async.parallel([
-    function(cb) {
-      client.search('/Public/', '.png', {
-        httpCache: true
-      }, function(err, files) {
-        if (err) {
-          return cb(err);
-        }
-        _picturesToDb(userId, files, cb);
-      });
-    },
-    function(cb) {
-      client.search('/Public/', '.jpg', {
-        httpCache: true
-      }, function(err, files) {
-        if (err) {
-          return cb(err);
-        }
-        _picturesToDb(userId, files, cb);
-      });
-    },
-    function(cb) {
-      client.search('/Public/', '.jpeg', {
-        httpCache: true
-      }, function(err, files) {
-        if (err) {
-          return cb(err);
-        }
-        _picturesToDb(userId, files, cb);
-      });
+function listAllKeys(marker, keys, cb) {
+  s3.listObjects({Bucket: "turismo-site", Prefix: "sources/", Marker: marker}, function(err, data) {
+    var new_keys = keys.concat(data.Contents);
+    if(data.IsTruncated) {
+      listAllKeys(data.Contents.slice(-1)[0].Key, new_keys, cb);
+    } else {
+      cb(new_keys);
     }
-  ], function(err) {
-    next(err);
   });
 }
 
-function _picturesToDb(userId, files, next) {
-  async.each(files, function(file, cb) {
-      if (file.is_dir) {
-        return cb;
-      }
-      pictureController.saveNewPicture(userId, file.path, file.modified, cb);
-    },
-    function(err) {
-      return next(err);
-    });
+function _picturesToDb(keys, next) {
+  async.each(keys, function(key, cb) {
+    var keyName = key.Key;
+    if (keyName.endsWith(".jpg") || keyName.endsWith(".png") || keyName.endsWith(".jpeg")) {
+      pictureController.saveNewPicture(keyName, key.LastModified, cb);
+    } else {
+      return cb(null);
+    }
+  },
+  function(err) {
+    return next(err);
+  });
 }
 
 
