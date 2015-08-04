@@ -69,14 +69,23 @@ GET: /sync
 ```
 
 ## GET /Pictures - Retrieve all pictures url [Paginated]
-Asks for all the available pictures url. Category filter is optional. The links are public for everyone.
+Asks for all the available pictures url. Category and date filter is optional. The links are public for everyone.
 ```js
 GET: /pictures
 
-allowed query params:
+Allowed query params:
 {
   category: String,
+  start_date: String,
+  end_date: String,
   page: Integer [default=1],
   limit: Integer [default=10]
 }
+
+Valid date strings:
+"2013-02-08 09:30"         # An hour and minute time part
+"2013-02-08 09:30:26"      # An hour, minute, and second time part
+"1410715640579"            # Unix ms timestamp
+
+[http://momentjs.com/docs/#/parsing/string]
 ```

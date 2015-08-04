@@ -3,7 +3,6 @@ var moment = require('moment');
 var _ = require('underscore');
 var async = require('async');
 var request = require('request');
-var sharp = require('sharp');
 var request = require('request').defaults({
   encoding: null
 });
@@ -13,7 +12,15 @@ function sortedList(req, res) {
   if (!category) {
     category = null;
   }
-  _listPictures(category, true, req.query.page, req.query.limit, function(err, pictures) {
+  var startDate = req.query.start_date;
+  if (startDate && moment(startDate).isValid()) {
+    startDate = moment(startDate);
+  }
+  var endDate = req.query.end_date;
+  if (endDate && moment(endDate).isValid()) {
+    endDate = moment(endDate);
+  }
+  _listPictures(category, startDate, endDate, true, req.query.page, req.query.limit, function(err, pictures) {
     if (err) {
       res.send(300, err);
     } else {
@@ -44,7 +51,15 @@ function list(req, res) {
   if (!category) {
     category = null;
   }
-  _listPictures(category, null, req.query.page, req.query.limit, function(err, pictures) {
+  var startDate = req.query.start_date;
+  if (startDate && moment(startDate).isValid()) {
+    startDate = moment(startDate);
+  }
+  var endDate = req.query.end_date;
+  if (endDate && moment(endDate).isValid()) {
+    endDate = moment(endDate);
+  }
+  _listPictures(category, startDate, endDate, null, req.query.page, req.query.limit, function(err, pictures) {
     if (err) {
       res.send(300, err);
     } else {
@@ -108,12 +123,28 @@ function _pathToDirectLink(key) {
   return 'https://s3-sa-east-1.amazonaws.com/turismo-site/' + key;
 }
 
-function _listPictures(category, sort, page, limit, next) {
-  var query = {thumbnail: { $exists: true }};
+function _listPictures(category, startDate, endDate, sort, page, limit, next) {
+  var query = {
+    thumbnail: {
+      $exists: true
+    }
+  };
   if (category) {
-    query['category'] = category.toLowerCase()
+    query.category = category.toLowerCase();
   }
-
+  if (startDate && endDate) {
+    if (endDate.isBefore(startDate)) {
+      query.date = {
+        $gte: endDate,
+        $lt: startDate
+      };
+    } else {
+      query.date = {
+        $gte: startDate,
+        $lt: endDate
+      };
+    }
+  }
   if (sort) {
     sort = {
       date: -1
@@ -130,7 +161,9 @@ function _listPictures(category, sort, page, limit, next) {
 }
 
 function _getPictureWithThumbnail(thumbnail, next) {
-  var query = {thumbnail: thumbnail}
+  var query = {
+    thumbnail: thumbnail
+  }
   Picture.findOne(query, next);
 }
 
