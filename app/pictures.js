@@ -12,11 +12,11 @@ function sortedList(req, res) {
   if (!category) {
     category = null;
   }
-  var startDate = req.query.start_date;
+  var startDate = parseInt(req.query.start_date);
   if (startDate && moment(startDate).isValid()) {
     startDate = moment(startDate);
   }
-  var endDate = req.query.end_date;
+  var endDate = parseInt(req.query.end_date);
   if (endDate && moment(endDate).isValid()) {
     endDate = moment(endDate);
   }
@@ -129,8 +129,12 @@ function _listPictures(category, startDate, endDate, sort, page, limit, next) {
       $exists: true
     }
   };
-  if (category) {
+  if (category && category != "experto") {
     query.category = category.toLowerCase();
+  } else {
+    query.category = {
+      $ne: "experto"
+    }
   }
   if (startDate && endDate) {
     if (endDate.isBefore(startDate)) {
