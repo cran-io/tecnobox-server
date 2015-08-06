@@ -124,11 +124,7 @@ function _pathToDirectLink(key) {
 }
 
 function _listPictures(category, startDate, endDate, sort, page, limit, next) {
-  var query = {
-    thumbnail: {
-      $exists: true
-    }
-  };
+  var query = {};
   if (category && category != "experto") {
     query.category = category.toLowerCase();
   } else {
